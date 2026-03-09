@@ -258,7 +258,7 @@ def run_streamlit_app():
 
     st.title("Capitec Statement Cleaner")
     st.write(
-        "Upload a Capitec statement text file or paste the statement text below to "
+        "Upload a Capitec statement PDF file or paste the statement text below to "
         "convert it into a clean, downloadable table."
     )
 
@@ -349,3 +349,4 @@ def run_streamlit_app():
 
 if __name__ == "__main__":
     run_streamlit_app()
+
