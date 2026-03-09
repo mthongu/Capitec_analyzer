@@ -1,6 +1,11 @@
-pandas
 streamlit
+pandas
 openpyxl
-typing-extensions
+numpy
+altair
+pydeck
 python-dateutil
 pytz
+typing-extensions
+toml
+six
