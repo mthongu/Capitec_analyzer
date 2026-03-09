@@ -9,3 +9,4 @@ pytz
 typing-extensions
 toml
 six
+PyPDF2
