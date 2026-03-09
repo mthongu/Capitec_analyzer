@@ -7,6 +7,54 @@ from typing import Iterable, Optional
 
 import pandas as pd
 
+import PyPDF2
+
+
+def capitec_pdf_to_clean_text(uploaded_file):
+
+    reader = PyPDF2.PdfReader(uploaded_file)
+
+    text = ""
+    for page in reader.pages:
+        extracted = page.extract_text()
+        if extracted:
+            text += extracted + "\n"
+
+    # ----- Capitec specific cleanup -----
+
+    num_start = text.find("Date Description Category")
+    new_text = text[num_start:]
+
+    pattern = r"\* Includes VAT.*?Fee\*Balance"
+    new2text = re.sub(pattern, "", new_text, flags=re.DOTALL)
+
+    lines = new2text.split("\n")
+    cleaned_lines = []
+
+    date_pattern = r"\d{2}/\d{2}/\d{4}"
+
+    for line in lines:
+
+        if re.match(date_pattern, line):
+            cleaned_lines.append(line)
+
+        else:
+
+            if line.startswith("Date Description Category Money In Money Out Fee*Balance"):
+                cleaned_lines.append(line)
+
+            elif cleaned_lines:
+                cleaned_lines[-1] += " " + line.strip()
+
+    new_text_no_cont = "\n".join(cleaned_lines)
+
+    final_text = re.sub(
+        r"\s*\* Includes VAT at \d+%?\*",
+        "",
+        new_text_no_cont
+    )
+
+    return final_text
 
 # =========================
 # Regex patterns
@@ -220,7 +268,7 @@ def run_streamlit_app():
     if "df" not in st.session_state:
         st.session_state.df = None
 
-    uploaded_file = st.file_uploader("Upload statement (.txt)", type=["txt"])
+    uploaded_file = st.file_uploader("Upload Capitec PDF statement", type=["pdf"])
     paste_text = st.text_area("Or paste statement text", height=220)
 
     custom_categories = st.text_input(
@@ -233,8 +281,10 @@ def run_streamlit_app():
     raw_text = ""
     if paste_text.strip():
         raw_text = paste_text
+        
     elif uploaded_file is not None:
-        raw_text = uploaded_file.read().decode("utf-8", errors="ignore")
+        raw_text = capitec_pdf_to_clean_text(uploaded_file)
+
 
     # -------------------------
     # Process button
